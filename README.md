@@ -29,6 +29,25 @@ spring:
 - `POST /api/admin/reports/{id}/policies`
 - `POST /api/admin/policies/{policyId}/rules`
 - `POST /api/admin/rules/{ruleId}/values`
+- `GET /api/admin/orgaos`
+- `POST /api/admin/orgaos`
+- `PUT /api/admin/orgaos/{id}`
+- `DELETE /api/admin/orgaos/{id}`
+- `GET /api/admin/unidades`
+- `POST /api/admin/unidades`
+- `PUT /api/admin/unidades/{id}`
+- `DELETE /api/admin/unidades/{id}`
+- `GET /api/admin/permissoes`
+- `POST /api/admin/permissoes`
+- `PUT /api/admin/permissoes/{id}`
+- `DELETE /api/admin/permissoes/{id}`
+- `GET /api/admin/grupos`
+- `POST /api/admin/grupos`
+- `PUT /api/admin/grupos/{id}`
+- `DELETE /api/admin/grupos/{id}`
+- `GET /api/admin/grupos/{grupoId}/permissoes`
+- `POST /api/admin/grupos/{grupoId}/permissoes`
+- `DELETE /api/admin/grupos/{grupoId}/permissoes/{permissaoId}`
 
 ## Usuários seed
 
