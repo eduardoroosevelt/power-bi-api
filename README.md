@@ -56,3 +56,7 @@ spring:
 - `userB` / `password`
 
 Os dados iniciais são carregados via Flyway (`V2__seed.sql`).
+
+## Front-end admin
+
+Acesse `http://localhost:8080/admin.html` para um painel simples de CRUD dos cadastros básicos (orgãos, unidades, permissões e grupos).
