@@ -24,6 +24,7 @@ spring:
 - `GET /api/me/menu`
 - `GET /api/reports/{id}`
 - `POST /api/reports/{id}/embed`
+- `POST /api/reports/{id}/access-logs`
 - `POST /api/admin/reports`
 - `POST /api/admin/reports/{id}/dimensions`
 - `POST /api/admin/reports/{id}/policies`
