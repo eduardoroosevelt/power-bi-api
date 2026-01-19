@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Power BI - RBAC</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Inter", "Segoe UI", sans-serif;
+      background: #f5f7fb;
+      color: #1a1f36;
+    }
+    body {
+      margin: 0;
+      padding: 24px;
+    }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 12px 24px rgba(31, 37, 68, 0.08);
+      margin-bottom: 20px;
+    }
+    .token-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    input, select, button {
+      border-radius: 8px;
+      border: 1px solid #d0d5dd;
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+    input, select {
+      min-width: 180px;
+    }
+    button {
+      cursor: pointer;
+      background: #1f5cff;
+      color: #fff;
+      border: none;
+      font-weight: 600;
+    }
+    button.secondary {
+      background: #e5e7eb;
+      color: #1f2937;
+    }
+    button.danger {
+      background: #e11d48;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid #eef2f6;
+      text-align: left;
+    }
+    th {
+      font-weight: 600;
+      color: #6b7280;
+    }
+    .grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+    .status {
+      font-size: 13px;
+      color: #475467;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Admin Power BI - RBAC</h1>
+      <p class="status">Use o token JWT para acessar os endpoints protegidos.</p>
+    </div>
+    <div class="token-row">
+      <input id="token" type="password" placeholder="Bearer token" />
+      <button onclick="saveToken()">Salvar token</button>
+      <button class="secondary" onclick="loadAll()">Recarregar dados</button>
+    </div>
+  </header>
+
+  <section class="card">
+    <h2>Órgãos</h2>
+    <div class="grid">
+      <form onsubmit="createOrgao(event)">
+        <h3>Novo órgão</h3>
+        <input id="orgao-nome" placeholder="Nome" required />
+        <input id="orgao-codigo" placeholder="Código" required />
+        <button type="submit">Criar</button>
+      </form>
+      <form onsubmit="updateOrgao(event)">
+        <h3>Editar órgão</h3>
+        <input id="orgao-id" placeholder="ID" required />
+        <input id="orgao-edit-nome" placeholder="Nome" required />
+        <input id="orgao-edit-codigo" placeholder="Código" required />
+        <button type="submit">Atualizar</button>
+      </form>
+    </div>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Nome</th><th>Código</th><th>Ações</th></tr>
+      </thead>
+      <tbody id="orgao-table"></tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Unidades</h2>
+    <div class="grid">
+      <form onsubmit="createUnidade(event)">
+        <h3>Nova unidade</h3>
+        <input id="unidade-orgao" placeholder="Orgao ID" required />
+        <input id="unidade-nome" placeholder="Nome" required />
+        <input id="unidade-codigo" placeholder="Código" required />
+        <button type="submit">Criar</button>
+      </form>
+      <form onsubmit="updateUnidade(event)">
+        <h3>Editar unidade</h3>
+        <input id="unidade-id" placeholder="ID" required />
+        <input id="unidade-edit-orgao" placeholder="Orgao ID" required />
+        <input id="unidade-edit-nome" placeholder="Nome" required />
+        <input id="unidade-edit-codigo" placeholder="Código" required />
+        <button type="submit">Atualizar</button>
+      </form>
+    </div>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Órgão</th><th>Nome</th><th>Código</th><th>Ações</th></tr>
+      </thead>
+      <tbody id="unidade-table"></tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Permissões</h2>
+    <div class="grid">
+      <form onsubmit="createPermissao(event)">
+        <h3>Nova permissão</h3>
+        <input id="permissao-code" placeholder="Código" required />
+        <input id="permissao-desc" placeholder="Descrição" />
+        <button type="submit">Criar</button>
+      </form>
+      <form onsubmit="updatePermissao(event)">
+        <h3>Editar permissão</h3>
+        <input id="permissao-id" placeholder="ID" required />
+        <input id="permissao-edit-code" placeholder="Código" required />
+        <input id="permissao-edit-desc" placeholder="Descrição" />
+        <button type="submit">Atualizar</button>
+      </form>
+    </div>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Código</th><th>Descrição</th><th>Ações</th></tr>
+      </thead>
+      <tbody id="permissao-table"></tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Grupos</h2>
+    <div class="grid">
+      <form onsubmit="createGrupo(event)">
+        <h3>Novo grupo</h3>
+        <input id="grupo-nome" placeholder="Nome" required />
+        <input id="grupo-desc" placeholder="Descrição" />
+        <button type="submit">Criar</button>
+      </form>
+      <form onsubmit="updateGrupo(event)">
+        <h3>Editar grupo</h3>
+        <input id="grupo-id" placeholder="ID" required />
+        <input id="grupo-edit-nome" placeholder="Nome" required />
+        <input id="grupo-edit-desc" placeholder="Descrição" />
+        <button type="submit">Atualizar</button>
+      </form>
+    </div>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Nome</th><th>Descrição</th><th>Ações</th></tr>
+      </thead>
+      <tbody id="grupo-table"></tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Grupo Permissões</h2>
+    <div class="grid">
+      <form onsubmit="listGrupoPermissoes(event)">
+        <h3>Listar permissões</h3>
+        <input id="grupo-perm-grupo-id" placeholder="Grupo ID" required />
+        <button type="submit">Carregar</button>
+      </form>
+      <form onsubmit="addGrupoPermissao(event)">
+        <h3>Adicionar permissão</h3>
+        <input id="grupo-perm-add-grupo" placeholder="Grupo ID" required />
+        <input id="grupo-perm-add-perm" placeholder="Permissão ID" required />
+        <button type="submit">Adicionar</button>
+      </form>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Grupo</th><th>ID Permissão</th><th>Código</th><th>Ação</th></tr>
+      </thead>
+      <tbody id="grupo-perm-table"></tbody>
+    </table>
+  </section>
+
+  <script>
+    const apiBase = window.location.origin;
+    const tokenInput = document.getElementById('token');
+
+    function saveToken() {
+      localStorage.setItem('adminToken', tokenInput.value.trim());
+      alert('Token salvo.');
+    }
+
+    function getToken() {
+      return tokenInput.value.trim() || localStorage.getItem('adminToken') || '';
+    }
+
+    async function api(path, options = {}) {
+      const token = getToken();
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(options.headers || {})
+      };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      const response = await fetch(`${apiBase}${path}`, {
+        ...options,
+        headers
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.message || `Erro ${response.status}`);
+      }
+      if (response.status === 204) {
+        return null;
+      }
+      return response.json();
+    }
+
+    async function loadAll() {
+      tokenInput.value = getToken();
+      await Promise.all([
+        loadOrgaos(),
+        loadUnidades(),
+        loadPermissoes(),
+        loadGrupos()
+      ]);
+    }
+
+    async function loadOrgaos() {
+      const data = await api('/api/admin/orgaos');
+      document.getElementById('orgao-table').innerHTML = data.map(orgao => `
+        <tr>
+          <td>${orgao.id}</td>
+          <td>${orgao.nome}</td>
+          <td>${orgao.codigo}</td>
+          <td class="actions">
+            <button class="secondary" onclick="fillOrgao(${orgao.id}, '${orgao.nome}', '${orgao.codigo}')">Editar</button>
+            <button class="danger" onclick="deleteOrgao(${orgao.id})">Excluir</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function fillOrgao(id, nome, codigo) {
+      document.getElementById('orgao-id').value = id;
+      document.getElementById('orgao-edit-nome').value = nome;
+      document.getElementById('orgao-edit-codigo').value = codigo;
+    }
+
+    async function createOrgao(event) {
+      event.preventDefault();
+      await api('/api/admin/orgaos', {
+        method: 'POST',
+        body: JSON.stringify({
+          nome: document.getElementById('orgao-nome').value,
+          codigo: document.getElementById('orgao-codigo').value
+        })
+      });
+      event.target.reset();
+      await loadOrgaos();
+    }
+
+    async function updateOrgao(event) {
+      event.preventDefault();
+      const id = document.getElementById('orgao-id').value;
+      await api(`/api/admin/orgaos/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          nome: document.getElementById('orgao-edit-nome').value,
+          codigo: document.getElementById('orgao-edit-codigo').value
+        })
+      });
+      await loadOrgaos();
+    }
+
+    async function deleteOrgao(id) {
+      if (!confirm('Excluir órgão?')) return;
+      await api(`/api/admin/orgaos/${id}`, { method: 'DELETE' });
+      await loadOrgaos();
+    }
+
+    async function loadUnidades() {
+      const data = await api('/api/admin/unidades');
+      document.getElementById('unidade-table').innerHTML = data.map(unidade => `
+        <tr>
+          <td>${unidade.id}</td>
+          <td>${unidade.orgao?.id ?? '-'}</td>
+          <td>${unidade.nome}</td>
+          <td>${unidade.codigo}</td>
+          <td class="actions">
+            <button class="secondary" onclick="fillUnidade(${unidade.id}, ${unidade.orgao?.id ?? ''}, '${unidade.nome}', '${unidade.codigo}')">Editar</button>
+            <button class="danger" onclick="deleteUnidade(${unidade.id})">Excluir</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function fillUnidade(id, orgaoId, nome, codigo) {
+      document.getElementById('unidade-id').value = id;
+      document.getElementById('unidade-edit-orgao').value = orgaoId;
+      document.getElementById('unidade-edit-nome').value = nome;
+      document.getElementById('unidade-edit-codigo').value = codigo;
+    }
+
+    async function createUnidade(event) {
+      event.preventDefault();
+      await api('/api/admin/unidades', {
+        method: 'POST',
+        body: JSON.stringify({
+          orgaoId: Number(document.getElementById('unidade-orgao').value),
+          nome: document.getElementById('unidade-nome').value,
+          codigo: document.getElementById('unidade-codigo').value
+        })
+      });
+      event.target.reset();
+      await loadUnidades();
+    }
+
+    async function updateUnidade(event) {
+      event.preventDefault();
+      const id = document.getElementById('unidade-id').value;
+      await api(`/api/admin/unidades/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          orgaoId: Number(document.getElementById('unidade-edit-orgao').value),
+          nome: document.getElementById('unidade-edit-nome').value,
+          codigo: document.getElementById('unidade-edit-codigo').value
+        })
+      });
+      await loadUnidades();
+    }
+
+    async function deleteUnidade(id) {
+      if (!confirm('Excluir unidade?')) return;
+      await api(`/api/admin/unidades/${id}`, { method: 'DELETE' });
+      await loadUnidades();
+    }
+
+    async function loadPermissoes() {
+      const data = await api('/api/admin/permissoes');
+      document.getElementById('permissao-table').innerHTML = data.map(permissao => `
+        <tr>
+          <td>${permissao.id}</td>
+          <td>${permissao.code}</td>
+          <td>${permissao.descricao ?? ''}</td>
+          <td class="actions">
+            <button class="secondary" onclick="fillPermissao(${permissao.id}, '${permissao.code}', '${permissao.descricao ?? ''}')">Editar</button>
+            <button class="danger" onclick="deletePermissao(${permissao.id})">Excluir</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function fillPermissao(id, code, descricao) {
+      document.getElementById('permissao-id').value = id;
+      document.getElementById('permissao-edit-code').value = code;
+      document.getElementById('permissao-edit-desc').value = descricao;
+    }
+
+    async function createPermissao(event) {
+      event.preventDefault();
+      await api('/api/admin/permissoes', {
+        method: 'POST',
+        body: JSON.stringify({
+          code: document.getElementById('permissao-code').value,
+          descricao: document.getElementById('permissao-desc').value
+        })
+      });
+      event.target.reset();
+      await loadPermissoes();
+    }
+
+    async function updatePermissao(event) {
+      event.preventDefault();
+      const id = document.getElementById('permissao-id').value;
+      await api(`/api/admin/permissoes/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          code: document.getElementById('permissao-edit-code').value,
+          descricao: document.getElementById('permissao-edit-desc').value
+        })
+      });
+      await loadPermissoes();
+    }
+
+    async function deletePermissao(id) {
+      if (!confirm('Excluir permissão?')) return;
+      await api(`/api/admin/permissoes/${id}`, { method: 'DELETE' });
+      await loadPermissoes();
+    }
+
+    async function loadGrupos() {
+      const data = await api('/api/admin/grupos');
+      document.getElementById('grupo-table').innerHTML = data.map(grupo => `
+        <tr>
+          <td>${grupo.id}</td>
+          <td>${grupo.nome}</td>
+          <td>${grupo.descricao ?? ''}</td>
+          <td class="actions">
+            <button class="secondary" onclick="fillGrupo(${grupo.id}, '${grupo.nome}', '${grupo.descricao ?? ''}')">Editar</button>
+            <button class="danger" onclick="deleteGrupo(${grupo.id})">Excluir</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function fillGrupo(id, nome, descricao) {
+      document.getElementById('grupo-id').value = id;
+      document.getElementById('grupo-edit-nome').value = nome;
+      document.getElementById('grupo-edit-desc').value = descricao;
+    }
+
+    async function createGrupo(event) {
+      event.preventDefault();
+      await api('/api/admin/grupos', {
+        method: 'POST',
+        body: JSON.stringify({
+          nome: document.getElementById('grupo-nome').value,
+          descricao: document.getElementById('grupo-desc').value
+        })
+      });
+      event.target.reset();
+      await loadGrupos();
+    }
+
+    async function updateGrupo(event) {
+      event.preventDefault();
+      const id = document.getElementById('grupo-id').value;
+      await api(`/api/admin/grupos/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          nome: document.getElementById('grupo-edit-nome').value,
+          descricao: document.getElementById('grupo-edit-desc').value
+        })
+      });
+      await loadGrupos();
+    }
+
+    async function deleteGrupo(id) {
+      if (!confirm('Excluir grupo?')) return;
+      await api(`/api/admin/grupos/${id}`, { method: 'DELETE' });
+      await loadGrupos();
+    }
+
+    async function listGrupoPermissoes(event) {
+      event.preventDefault();
+      const grupoId = document.getElementById('grupo-perm-grupo-id').value;
+      const data = await api(`/api/admin/grupos/${grupoId}/permissoes`);
+      renderGrupoPermissoes(grupoId, data);
+    }
+
+    async function addGrupoPermissao(event) {
+      event.preventDefault();
+      const grupoId = document.getElementById('grupo-perm-add-grupo').value;
+      const permissaoId = document.getElementById('grupo-perm-add-perm').value;
+      const data = await api(`/api/admin/grupos/${grupoId}/permissoes`, {
+        method: 'POST',
+        body: JSON.stringify({ permissaoId: Number(permissaoId) })
+      });
+      renderGrupoPermissoes(grupoId, data);
+    }
+
+    function renderGrupoPermissoes(grupoId, permissoes) {
+      document.getElementById('grupo-perm-table').innerHTML = permissoes.map(permissao => `
+        <tr>
+          <td>${grupoId}</td>
+          <td>${permissao.id}</td>
+          <td>${permissao.code}</td>
+          <td>
+            <button class="danger" onclick="removeGrupoPermissao(${grupoId}, ${permissao.id})">Remover</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function removeGrupoPermissao(grupoId, permissaoId) {
+      await api(`/api/admin/grupos/${grupoId}/permissoes/${permissaoId}`, { method: 'DELETE' });
+      const data = await api(`/api/admin/grupos/${grupoId}/permissoes`);
+      renderGrupoPermissoes(grupoId, data);
+    }
+
+    loadAll().catch(error => alert(error.message));
+  </script>
+</body>
+</html>
