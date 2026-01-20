@@ -1,6 +1,7 @@
 package com.example.app.reports;
 
 import java.time.Instant;
+import java.util.List;
 
 public class EmbedResponse {
     private String reportInternalId;
@@ -9,6 +10,7 @@ public class EmbedResponse {
     private Instant expiresAt;
     private String principal;
     private String reportKey;
+    private List<EmbedFilter> filters;
 
     public String getReportInternalId() {
         return reportInternalId;
@@ -56,5 +58,13 @@ public class EmbedResponse {
 
     public void setReportKey(String reportKey) {
         this.reportKey = reportKey;
+    }
+
+    public List<EmbedFilter> getFilters() {
+        return filters;
+    }
+
+    public void setFilters(List<EmbedFilter> filters) {
+        this.filters = filters;
     }
 }

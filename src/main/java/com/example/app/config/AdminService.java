@@ -224,6 +224,8 @@ public class AdminService {
         dimension.setReport(report);
         dimension.setDimensionKey(request.getDimensionKey());
         dimension.setDimensionLabel(request.getDimensionLabel());
+        dimension.setTableName(request.getTableName());
+        dimension.setColumnName(request.getColumnName());
         dimension.setValueType(request.getValueType());
         dimension.setActive(request.getActive());
         return dimensionRepository.save(dimension);

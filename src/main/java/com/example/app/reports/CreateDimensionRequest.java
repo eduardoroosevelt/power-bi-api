@@ -9,6 +9,10 @@ public class CreateDimensionRequest {
     private String dimensionKey;
     @NotBlank
     private String dimensionLabel;
+    @NotBlank
+    private String tableName;
+    @NotBlank
+    private String columnName;
     @NotNull
     private ValueType valueType;
     @NotNull
@@ -28,6 +32,22 @@ public class CreateDimensionRequest {
 
     public void setDimensionLabel(String dimensionLabel) {
         this.dimensionLabel = dimensionLabel;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    public String getColumnName() {
+        return columnName;
+    }
+
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
     }
 
     public ValueType getValueType() {

@@ -2,16 +2,24 @@ package com.example.app.reports;
 
 import com.example.app.common.ForbiddenException;
 import com.example.app.common.NotFoundException;
+import com.example.app.common.BadRequestException;
+import com.example.app.common.Enums.PolicyEffect;
+import com.example.app.common.Enums.RuleOperator;
+import com.example.app.common.Enums.ValueType;
 import com.example.app.menu.MenuItemRepository;
 import com.example.app.common.Enums.ResourceType;
 import com.example.app.policies.PolicyService;
 import com.example.app.policies.ReportAccessPolicy;
+import com.example.app.policies.ReportAccessPolicyRule;
+import com.example.app.policies.ReportAccessPolicyRuleRepository;
 import com.example.app.rbac.PermissionService;
 import com.example.app.rbac.Usuario;
 import com.example.app.rbac.UsuarioRepository;
 import com.example.app.securityscope.SecurityScopeService;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +33,7 @@ public class ReportService {
     private final PolicyService policyService;
     private final SecurityScopeService securityScopeService;
     private final PowerBiClient powerBiClient;
+    private final ReportAccessPolicyRuleRepository ruleRepository;
 
     public ReportService(PowerBiReportRepository reportRepository,
                          ReportDimensionRepository dimensionRepository,
@@ -33,7 +42,8 @@ public class ReportService {
                          MenuItemRepository menuItemRepository,
                          PolicyService policyService,
                          SecurityScopeService securityScopeService,
-                         PowerBiClient powerBiClient) {
+                         PowerBiClient powerBiClient,
+                         ReportAccessPolicyRuleRepository ruleRepository) {
         this.reportRepository = reportRepository;
         this.dimensionRepository = dimensionRepository;
         this.usuarioRepository = usuarioRepository;
@@ -42,6 +52,7 @@ public class ReportService {
         this.policyService = policyService;
         this.securityScopeService = securityScopeService;
         this.powerBiClient = powerBiClient;
+        this.ruleRepository = ruleRepository;
     }
 
     public ReportDetailDto getReport(Long reportId) {
@@ -92,6 +103,7 @@ public class ReportService {
         response.setExpiresAt(result.getExpiresAt());
         response.setPrincipal(principal);
         response.setReportKey(reportKey);
+        response.setFilters(buildFilters(reportId, policy, values));
         return response;
     }
 
@@ -100,8 +112,80 @@ public class ReportService {
         dto.setId(dimension.getId());
         dto.setDimensionKey(dimension.getDimensionKey());
         dto.setDimensionLabel(dimension.getDimensionLabel());
+        dto.setTableName(dimension.getTableName());
+        dto.setColumnName(dimension.getColumnName());
         dto.setValueType(dimension.getValueType());
         dto.setActive(dimension.isActive());
         return dto;
+    }
+
+    private List<EmbedFilter> buildFilters(Long reportId,
+                                           ReportAccessPolicy policy,
+                                           Map<String, List<String>> valuesByDimension) {
+        if (policy == null || policy.getEffect() == PolicyEffect.ALLOW_ALL) {
+            return List.of();
+        }
+
+        List<ReportDimension> dimensions = dimensionRepository.findByReportIdAndActiveTrue(reportId);
+        Map<String, ReportAccessPolicyRule> rules = ruleRepository
+            .findByPolicyIdAndActiveTrue(policy.getId())
+            .stream()
+            .collect(Collectors.toMap(ReportAccessPolicyRule::getDimensionKey, rule -> rule));
+
+        List<EmbedFilter> filters = new ArrayList<>();
+
+        for (ReportDimension dimension : dimensions) {
+            ReportAccessPolicyRule rule = rules.get(dimension.getDimensionKey());
+            if (rule == null) {
+                throw new ForbiddenException("Missing policy rule for dimension " + dimension.getDimensionKey());
+            }
+            if (rule.getOperator() == RuleOperator.ALL) {
+                continue;
+            }
+            List<String> values = valuesByDimension.get(dimension.getDimensionKey());
+            if (values == null || values.isEmpty() || values.contains("*")) {
+                continue;
+            }
+            if (dimension.getTableName() == null || dimension.getTableName().isBlank()
+                || dimension.getColumnName() == null || dimension.getColumnName().isBlank()) {
+                throw new BadRequestException("Dimension mapping is missing for " + dimension.getDimensionKey());
+            }
+
+            List<Object> typedValues = mapValues(values, dimension.getValueType(), dimension.getDimensionKey());
+            EmbedFilter filter = new EmbedFilter();
+            EmbedFilterTarget target = new EmbedFilterTarget();
+            target.setTable(dimension.getTableName());
+            target.setColumn(dimension.getColumnName());
+            filter.setTarget(target);
+            filter.setOperator(mapOperator(rule.getOperator()));
+            filter.setValues(typedValues);
+            filters.add(filter);
+        }
+        return filters;
+    }
+
+    private String mapOperator(RuleOperator operator) {
+        return switch (operator) {
+            case IN -> "In";
+            case NOT_IN -> "NotIn";
+            case ALL -> "All";
+        };
+    }
+
+    private List<Object> mapValues(List<String> values, ValueType valueType, String dimensionKey) {
+        return values.stream()
+            .map(value -> switch (valueType) {
+                case INT -> parseInteger(value, dimensionKey);
+                case UUID, STRING -> value;
+            })
+            .collect(Collectors.toList());
+    }
+
+    private Integer parseInteger(String value, String dimensionKey) {
+        try {
+            return Integer.valueOf(value);
+        } catch (NumberFormatException ex) {
+            throw new BadRequestException("Invalid INT value for dimension " + dimensionKey);
+        }
     }
 }
