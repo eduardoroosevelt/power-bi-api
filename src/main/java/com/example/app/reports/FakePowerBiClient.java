@@ -3,9 +3,12 @@ package com.example.app.reports;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
+
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnMissingBean(PowerBiClient.class)
 public class FakePowerBiClient implements PowerBiClient {
     @Override
     public PowerBiEmbedResult generateEmbed(PowerBiReport report, String principal, String reportKey) {

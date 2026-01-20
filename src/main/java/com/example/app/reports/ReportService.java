@@ -61,10 +61,13 @@ public class ReportService {
 
     @Transactional
     public EmbedResponse generateEmbed(Long reportId, String username) {
+
         PowerBiReport report = reportRepository.findByIdAndAtivoTrue(reportId)
             .orElseThrow(() -> new NotFoundException("Report not found"));
+
         Usuario usuario = usuarioRepository.findByUsername(username)
             .orElseThrow(() -> new NotFoundException("User not found"));
+
         menuItemRepository.findByResourceIdAndResourceType(reportId, ResourceType.POWERBI_REPORT)
             .ifPresent(menuItem -> {
                 if (menuItem.getPermissao() != null
@@ -72,14 +75,18 @@ public class ReportService {
                     throw new ForbiddenException("Missing permission for report");
                 }
             });
+
         ReportAccessPolicy policy = policyService.resolvePolicy(reportId, usuario);
         Map<String, List<String>> values = policyService.buildScopeValues(reportId, usuario, policy);
+
         String principal = usuario.getUsername();
         String reportKey = String.valueOf(report.getId());
-        securityScopeService.materialize(principal, reportKey, values);
+
+     //   securityScopeService.materialize(principal, reportKey, values);
+
         PowerBiEmbedResult result = powerBiClient.generateEmbed(report, principal, reportKey);
         EmbedResponse response = new EmbedResponse();
-        response.setReportInternalId(report.getId());
+        response.setReportInternalId(report.getReportId());
         response.setEmbedUrl(result.getEmbedUrl());
         response.setAccessToken(result.getAccessToken());
         response.setExpiresAt(result.getExpiresAt());

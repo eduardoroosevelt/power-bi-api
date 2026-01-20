@@ -3,18 +3,18 @@ package com.example.app.reports;
 import java.time.Instant;
 
 public class EmbedResponse {
-    private Long reportInternalId;
+    private String reportInternalId;
     private String embedUrl;
     private String accessToken;
     private Instant expiresAt;
     private String principal;
     private String reportKey;
 
-    public Long getReportInternalId() {
+    public String getReportInternalId() {
         return reportInternalId;
     }
 
-    public void setReportInternalId(Long reportInternalId) {
+    public void setReportInternalId(String reportInternalId) {
         this.reportInternalId = reportInternalId;
     }
 

@@ -32,6 +32,8 @@ public final class Enums {
     }
 
     public enum RuleOperator {
-        IN
+        IN,
+        NOT_IN,
+        ALL
     }
 }
