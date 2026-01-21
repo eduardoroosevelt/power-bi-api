@@ -6,6 +6,8 @@ public class ReportDimensionDto {
     private Long id;
     private String dimensionKey;
     private String dimensionLabel;
+    private String tableName;
+    private String columnName;
     private ValueType valueType;
     private boolean active;
 
@@ -31,6 +33,22 @@ public class ReportDimensionDto {
 
     public void setDimensionLabel(String dimensionLabel) {
         this.dimensionLabel = dimensionLabel;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    public String getColumnName() {
+        return columnName;
+    }
+
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
     }
 
     public ValueType getValueType() {

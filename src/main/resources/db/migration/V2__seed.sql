@@ -54,13 +54,13 @@ values
     (2, 1, 'Painel A', 'chart', '/dash/a', 1, true, 'POWERBI_REPORT', 1, 2),
     (3, 1, 'Painel B', 'chart', '/dash/b', 2, true, 'POWERBI_REPORT', 2, 3);
 
-insert into report_dimension (id, report_id, dimension_key, dimension_label, value_type, active)
+insert into report_dimension (id, report_id, dimension_key, dimension_label, table_name, column_name, value_type, active)
 values
-    (1, 1, 'orgao_id', 'Orgao', 'INT', true),
-    (2, 1, 'unidade_id', 'Unidade', 'INT', true),
-    (3, 1, 'tipo_despesa_id', 'Tipo Despesa', 'STRING', true),
-    (4, 2, 'cidade_id', 'Cidade', 'INT', true),
-    (5, 2, 'tipo_despesa_id', 'Tipo Despesa', 'STRING', true);
+    (1, 1, 'orgao_id', 'Orgao', 'DADOS_ADIANTAMENTO', 'IDORGAO', 'INT', true),
+    (2, 1, 'unidade_id', 'Unidade', 'DADOS_ADIANTAMENTO', 'IDUNIDADE', 'INT', true),
+    (3, 1, 'tipo_despesa_id', 'Tipo Despesa', 'DADOS_ADIANTAMENTO', 'TIPO_DESPESA_ID', 'STRING', true),
+    (4, 2, 'cidade_id', 'Cidade', 'DADOS_CIDADE', 'CIDADE_ID', 'INT', true),
+    (5, 2, 'tipo_despesa_id', 'Tipo Despesa', 'DADOS_CIDADE', 'TIPO_DESPESA_ID', 'STRING', true);
 
 insert into report_access_policy (id, report_id, subject_type, subject_id, effect, priority, active)
 values
