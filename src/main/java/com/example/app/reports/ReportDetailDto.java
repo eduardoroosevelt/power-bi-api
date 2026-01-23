@@ -11,6 +11,7 @@ public class ReportDetailDto {
     private String datasetId;
     private boolean ativo;
     private List<ReportDimensionDto> dimensions = new ArrayList<>();
+    private List<ReportAccessPolicyDto> policies = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -66,5 +67,13 @@ public class ReportDetailDto {
 
     public void setDimensions(List<ReportDimensionDto> dimensions) {
         this.dimensions = dimensions;
+    }
+
+    public List<ReportAccessPolicyDto> getPolicies() {
+        return policies;
+    }
+
+    public void setPolicies(List<ReportAccessPolicyDto> policies) {
+        this.policies = policies;
     }
 }

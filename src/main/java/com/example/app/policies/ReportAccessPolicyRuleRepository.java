@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ReportAccessPolicyRuleRepository extends JpaRepository<ReportAccessPolicyRule, Long> {
     List<ReportAccessPolicyRule> findByPolicyIdAndActiveTrue(Long policyId);
+
+    List<ReportAccessPolicyRule> findByPolicyId(Long policyId);
 }

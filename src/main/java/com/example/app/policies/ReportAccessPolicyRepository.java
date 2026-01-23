@@ -17,4 +17,6 @@ public interface ReportAccessPolicyRepository extends JpaRepository<ReportAccess
         SubjectType subjectType,
         List<Long> subjectIds
     );
+
+    List<ReportAccessPolicy> findByReportId(Long reportId);
 }

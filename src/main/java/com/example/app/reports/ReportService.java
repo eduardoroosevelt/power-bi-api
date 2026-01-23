@@ -10,8 +10,11 @@ import com.example.app.menu.MenuItemRepository;
 import com.example.app.common.Enums.ResourceType;
 import com.example.app.policies.PolicyService;
 import com.example.app.policies.ReportAccessPolicy;
+import com.example.app.policies.ReportAccessPolicyRepository;
 import com.example.app.policies.ReportAccessPolicyRule;
 import com.example.app.policies.ReportAccessPolicyRuleRepository;
+import com.example.app.policies.ReportAccessPolicyRuleValue;
+import com.example.app.policies.ReportAccessPolicyRuleValueRepository;
 import com.example.app.rbac.PermissionService;
 import com.example.app.rbac.Usuario;
 import com.example.app.rbac.UsuarioRepository;
@@ -31,9 +34,11 @@ public class ReportService {
     private final PermissionService permissionService;
     private final MenuItemRepository menuItemRepository;
     private final PolicyService policyService;
+    private final ReportAccessPolicyRepository policyRepository;
     private final SecurityScopeService securityScopeService;
     private final PowerBiClient powerBiClient;
     private final ReportAccessPolicyRuleRepository ruleRepository;
+    private final ReportAccessPolicyRuleValueRepository ruleValueRepository;
 
     public ReportService(PowerBiReportRepository reportRepository,
                          ReportDimensionRepository dimensionRepository,
@@ -41,18 +46,22 @@ public class ReportService {
                          PermissionService permissionService,
                          MenuItemRepository menuItemRepository,
                          PolicyService policyService,
+                         ReportAccessPolicyRepository policyRepository,
                          SecurityScopeService securityScopeService,
                          PowerBiClient powerBiClient,
-                         ReportAccessPolicyRuleRepository ruleRepository) {
+                         ReportAccessPolicyRuleRepository ruleRepository,
+                         ReportAccessPolicyRuleValueRepository ruleValueRepository) {
         this.reportRepository = reportRepository;
         this.dimensionRepository = dimensionRepository;
         this.usuarioRepository = usuarioRepository;
         this.permissionService = permissionService;
         this.menuItemRepository = menuItemRepository;
         this.policyService = policyService;
+        this.policyRepository = policyRepository;
         this.securityScopeService = securityScopeService;
         this.powerBiClient = powerBiClient;
         this.ruleRepository = ruleRepository;
+        this.ruleValueRepository = ruleValueRepository;
     }
 
     public ReportDetailDto getReport(Long reportId) {
@@ -67,6 +76,7 @@ public class ReportService {
         dto.setAtivo(report.isAtivo());
         List<ReportDimension> dimensions = dimensionRepository.findByReportIdAndActiveTrue(reportId);
         dto.setDimensions(dimensions.stream().map(this::toDto).toList());
+        dto.setPolicies(buildPolicyDtos(reportId));
         return dto;
     }
 
@@ -116,6 +126,39 @@ public class ReportService {
         dto.setColumnName(dimension.getColumnName());
         dto.setValueType(dimension.getValueType());
         dto.setActive(dimension.isActive());
+        return dto;
+    }
+
+    private List<ReportAccessPolicyDto> buildPolicyDtos(Long reportId) {
+        return policyRepository.findByReportId(reportId)
+            .stream()
+            .map(this::toPolicyDto)
+            .toList();
+    }
+
+    private ReportAccessPolicyDto toPolicyDto(ReportAccessPolicy policy) {
+        ReportAccessPolicyDto dto = new ReportAccessPolicyDto();
+        dto.setId(policy.getId());
+        dto.setSubjectType(policy.getSubjectType());
+        dto.setSubjectId(policy.getSubjectId());
+        dto.setEffect(policy.getEffect());
+        dto.setPriority(policy.getPriority());
+        dto.setActive(policy.isActive());
+        List<ReportAccessPolicyRule> rules = ruleRepository.findByPolicyId(policy.getId());
+        dto.setRules(rules.stream().map(this::toRuleDto).toList());
+        return dto;
+    }
+
+    private ReportAccessPolicyRuleDto toRuleDto(ReportAccessPolicyRule rule) {
+        ReportAccessPolicyRuleDto dto = new ReportAccessPolicyRuleDto();
+        dto.setId(rule.getId());
+        dto.setDimensionKey(rule.getDimensionKey());
+        dto.setOperator(rule.getOperator());
+        dto.setValuesMode(rule.getValuesMode());
+        dto.setUserAttribute(rule.getUserAttribute());
+        dto.setActive(rule.isActive());
+        List<ReportAccessPolicyRuleValue> values = ruleValueRepository.findByRuleId(rule.getId());
+        dto.setValues(values.stream().map(ReportAccessPolicyRuleValue::getRuleValue).toList());
         return dto;
     }
 
