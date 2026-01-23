@@ -257,6 +257,9 @@ public class AdminService {
             && request.getValues() != null && !request.getValues().isEmpty()) {
             throw new BadRequestException("values are not allowed for FROM_USER_ATTRIBUTE");
         }
+        if (request.isAllowAll() && request.getValues() != null && !request.getValues().isEmpty()) {
+            throw new BadRequestException("values are not allowed when allowAll is true");
+        }
         if (request.getValuesMode() == ValuesMode.STATIC && !request.isAllowAll()) {
             if (request.getValues() == null || request.getValues().isEmpty()) {
                 throw new BadRequestException("values are required for STATIC rules");
@@ -292,6 +295,9 @@ public class AdminService {
             .orElseThrow(() -> new NotFoundException("Rule not found"));
         if (rule.getValuesMode() == ValuesMode.FROM_USER_ATTRIBUTE) {
             throw new BadRequestException("Cannot add static values for FROM_USER_ATTRIBUTE rule");
+        }
+        if (valueRepository.existsByRuleIdAndRuleValue(ruleId, request.getValue())) {
+            throw new BadRequestException("Rule value already exists");
         }
         ReportAccessPolicyRuleValue value = new ReportAccessPolicyRuleValue();
         value.setRule(rule);

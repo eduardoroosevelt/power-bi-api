@@ -1,22 +1,26 @@
-package com.example.app.policies;
+package com.example.app.reports;
 
 import com.example.app.common.Enums.RuleOperator;
 import com.example.app.common.Enums.ValuesMode;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 
-public class CreateRuleRequest {
-    @NotBlank
+public class ReportAccessPolicyRuleDto {
+    private Long id;
     private String dimensionKey;
     private RuleOperator operator;
-    @NotNull
     private ValuesMode valuesMode;
     private String userAttribute;
-    private boolean allowAll;
-    @NotNull
-    private Boolean active;
-    private List<String> values;
+    private boolean active;
+    private List<String> values = new ArrayList<>();
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getDimensionKey() {
         return dimensionKey;
@@ -50,19 +54,11 @@ public class CreateRuleRequest {
         this.userAttribute = userAttribute;
     }
 
-    public boolean isAllowAll() {
-        return allowAll;
-    }
-
-    public void setAllowAll(boolean allowAll) {
-        this.allowAll = allowAll;
-    }
-
-    public Boolean getActive() {
+    public boolean isActive() {
         return active;
     }
 
-    public void setActive(Boolean active) {
+    public void setActive(boolean active) {
         this.active = active;
     }
 
