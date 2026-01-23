@@ -9,7 +9,6 @@ import java.util.List;
 public class CreateRuleRequest {
     @NotBlank
     private String dimensionKey;
-    @NotNull
     private RuleOperator operator;
     @NotNull
     private ValuesMode valuesMode;
